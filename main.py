@@ -4,6 +4,10 @@ from google.cloud import firestore
 from flask import Flask, jsonify, abort
 app = Flask(__name__)
 
+@app.errorhandler(404)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 404
+
 @app.route('/', defaults={'id': None})
 @app.route('/<id>')
 def get_review(id):
