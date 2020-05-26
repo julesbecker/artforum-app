@@ -7,6 +7,10 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "path_to_your_.json_credential_fi
 
 app = Flask(__name__)
 
+# Firestore db
+db = firestore.Client()
+reviews_ref = db.collection("reviews")
+
 @app.errorhandler(404)
 def resource_not_found(e):
     return jsonify(error=str(e)), 404
@@ -14,9 +18,6 @@ def resource_not_found(e):
 @app.route('/api/reviews/art/', defaults={'id': None})
 @app.route('/api/reviews/art/<id>')
 def get_review(id):
-    db = firestore.Client()
-    reviews_ref = db.collection("reviews")
-
     if id == None:
         query = reviews_ref.order_by("selection_count").limit(1).stream()
         for doc in query:
