@@ -1,7 +1,10 @@
 from google.cloud import firestore
-
-# Project ID is determined by the GCLOUD_PROJECT environment variable
 from flask import Flask, jsonify, abort
+import os
+
+# change "path/to/key.json" to the path to the Google Cloud key
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "path_to_your_.json_credential_file"
+
 app = Flask(__name__)
 
 @app.errorhandler(404)
