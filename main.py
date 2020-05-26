@@ -8,8 +8,8 @@ app = Flask(__name__)
 def resource_not_found(e):
     return jsonify(error=str(e)), 404
 
-@app.route('/', defaults={'id': None})
-@app.route('/<id>')
+@app.route('/api/reviews/art/', defaults={'id': None})
+@app.route('/api/reviews/art/<id>')
 def get_review(id):
     db = firestore.Client()
     reviews_ref = db.collection("reviews")
