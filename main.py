@@ -32,6 +32,7 @@ def get_art_review(id):
             id = doc.id
             result = doc.to_dict()
             result['id'] = id
+            result['text'] = '<p>{}</p>'.format(result['text'])
             break
 
         db.collection("reviews").document(id).update(
@@ -43,6 +44,7 @@ def get_art_review(id):
         if doc.exists:
             result = doc.to_dict()
             result['id'] = id
+            result['text'] = '<p>{}</p>'.format(result['text'])
             return jsonify(result)
         else:
             abort(404, description="id not found")
@@ -80,16 +82,18 @@ def get_music_review(id):
 
             sentences = nltk.tokenize.sent_tokenize(result['text'])
 
-            if len(sentences) > 3:
+            if len(sentences) > 3 and result['length'] > 250:
                 if result['length'] > 500:
                     first_third = ' '.join(sentences[:len(sentences)//3])
                     second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
                     third_third = ' '.join(sentences[2*len(sentences)//3:])
                     result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
-                elif result['length'] > 250:
+                else:
                     first_half = ' '.join(sentences[:len(sentences)//2])
                     second_half = ' '.join(sentences[len(sentences)//2:]) 
                     result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
+            else:
+                result['text'] = '<p>{}</p>'.format(result['text'])        
 
             return jsonify(result) 
     else:
@@ -101,16 +105,18 @@ def get_music_review(id):
 
             sentences = nltk.tokenize.sent_tokenize(result['text'])
 
-            if len(sentences) > 3:
+            if len(sentences) > 3 and result['length'] > 250:
                 if result['length'] > 500:
                     first_third = ' '.join(sentences[:len(sentences)//3])
                     second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
                     third_third = ' '.join(sentences[2*len(sentences)//3:])
                     result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
-                elif result['length'] > 250:
+                else:
                     first_half = ' '.join(sentences[:len(sentences)//2])
                     second_half = ' '.join(sentences[len(sentences)//2:]) 
                     result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
+            else:
+                result['text'] = '<p>{}</p>'.format(result['text']) 
 
             return jsonify(result)
         else:
