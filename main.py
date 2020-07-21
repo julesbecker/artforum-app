@@ -3,8 +3,8 @@ from flask import Flask, jsonify, abort, request
 import os
 import nltk
 
-# the .download() call can be removed after first run
-nltk.download('punkt', download_dir='./nltk')
+# the .download() call is only necessary on the first run
+# nltk.download('punkt', download_dir='./nltk')
 nltk.data.path.append('./nltk')
 
 # change "path/to/key.json" to the path to the Google Cloud key
