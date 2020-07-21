@@ -1,6 +1,11 @@
 from google.cloud import firestore
 from flask import Flask, jsonify, abort, request
 import os
+import nltk
+
+# the .download() call can be removed after first run
+nltk.download('punkt', download_dir='./nltk')
+nltk.data.path.append('./nltk')
 
 # change "path/to/key.json" to the path to the Google Cloud key
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./key.json"
@@ -68,11 +73,25 @@ def get_music_review(id):
 
         # if query was empty, result will still be None
         if result is None:
-           abort(404, description="incorrect query")
+            abort(404, description="incorrect query")
         else:
-           pitchfork_ref.document(id).update(
-              {"selection_count": firestore.Increment(1)})
-           return jsonify(result) 
+            pitchfork_ref.document(id).update(
+                {"selection_count": firestore.Increment(1)})
+
+            sentences = nltk.tokenize.sent_tokenize(result['text'])
+
+            if len(sentences) > 3:
+                if result['length'] > 500:
+                    first_third = ' '.join(sentences[:len(sentences)//3])
+                    second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
+                    third_third = ' '.join(sentences[2*len(sentences)//3:])
+                    result['text'] = '<p>{}</p>\n<p>{}</p>\n<p>{}</p>'.format(first_third, second_third, third_third)
+                elif result['length'] > 250:
+                    first_half = ' '.join(sentences[:len(sentences)//2])
+                    second_half = ' '.join(sentences[len(sentences)//2:]) 
+                    result['text'] = '<p>{}</p>\n<p>{}</p>'.format(first_half, second_half)
+
+            return jsonify(result) 
     else:
         doc = pitchfork_ref.document(id).get()
 
