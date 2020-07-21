@@ -85,11 +85,11 @@ def get_music_review(id):
                     first_third = ' '.join(sentences[:len(sentences)//3])
                     second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
                     third_third = ' '.join(sentences[2*len(sentences)//3:])
-                    result['text'] = '<p>{}</p>\n<p>{}</p>\n<p>{}</p>'.format(first_third, second_third, third_third)
+                    result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
                 elif result['length'] > 250:
                     first_half = ' '.join(sentences[:len(sentences)//2])
                     second_half = ' '.join(sentences[len(sentences)//2:]) 
-                    result['text'] = '<p>{}</p>\n<p>{}</p>'.format(first_half, second_half)
+                    result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
 
             return jsonify(result) 
     else:
@@ -98,6 +98,20 @@ def get_music_review(id):
         if doc.exists:
             result = doc.to_dict()
             result['id'] = id
+
+            sentences = nltk.tokenize.sent_tokenize(result['text'])
+
+            if len(sentences) > 3:
+                if result['length'] > 500:
+                    first_third = ' '.join(sentences[:len(sentences)//3])
+                    second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
+                    third_third = ' '.join(sentences[2*len(sentences)//3:])
+                    result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
+                elif result['length'] > 250:
+                    first_half = ' '.join(sentences[:len(sentences)//2])
+                    second_half = ' '.join(sentences[len(sentences)//2:]) 
+                    result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
+
             return jsonify(result)
         else:
             abort(404, description="id not found")
