@@ -15,7 +15,27 @@ app = Flask(__name__)
 # Firestore db
 db = firestore.Client()
 artforum_ref = db.collection("reviews")
-pitchfork_ref = db.collection("pitchfork") 
+pitchfork_ref = db.collection("pitchfork")
+
+
+def format_text(text, length):
+    sentences = nltk.tokenize.sent_tokenize(text)
+    if len(sentences) > 3 and length > 250:
+        if length > 500:
+            # split into 3 paragraphs
+            first_third = " ".join(sentences[: len(sentences) // 3])
+            second_third = " ".join(sentences[len(sentences) // 3 : 2 * len(sentences) // 3])
+            third_third = " ".join(sentences[2 * len(sentences) // 3 :])
+            return "<p>{}</p><p>{}</p><p>{}</p>".format(
+                first_third, second_third, third_third
+            )
+        else:
+            # split into 2 paragraphs
+            first_half = " ".join(sentences[: len(sentences) // 2])
+            second_half = " ".join(sentences[len(sentences) // 2 :])
+            return "<p>{}</p><p>{}</p>".format(first_half, second_half)
+    else:
+        return "<p>{}</p>".format(text)
 
 
 @app.errorhandler(404)
@@ -79,45 +99,15 @@ def get_music_review(id):
         else:
             pitchfork_ref.document(id).update(
                 {"selection_count": firestore.Increment(1)})
-
-            sentences = nltk.tokenize.sent_tokenize(result['text'])
-
-            if len(sentences) > 3 and result['length'] > 250:
-                if result['length'] > 500:
-                    first_third = ' '.join(sentences[:len(sentences)//3])
-                    second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
-                    third_third = ' '.join(sentences[2*len(sentences)//3:])
-                    result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
-                else:
-                    first_half = ' '.join(sentences[:len(sentences)//2])
-                    second_half = ' '.join(sentences[len(sentences)//2:]) 
-                    result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
-            else:
-                result['text'] = '<p>{}</p>'.format(result['text'])        
-
-            return jsonify(result) 
+            result['text'] = format_text(result['text'], result['length'])
+            return jsonify(result)
     else:
         doc = pitchfork_ref.document(id).get()
 
         if doc.exists:
             result = doc.to_dict()
             result['id'] = id
-
-            sentences = nltk.tokenize.sent_tokenize(result['text'])
-
-            if len(sentences) > 3 and result['length'] > 250:
-                if result['length'] > 500:
-                    first_third = ' '.join(sentences[:len(sentences)//3])
-                    second_third = ' '.join(sentences[len(sentences)//3:2*len(sentences)//3])
-                    third_third = ' '.join(sentences[2*len(sentences)//3:])
-                    result['text'] = '<p>{}</p><p>{}</p><p>{}</p>'.format(first_third, second_third, third_third)
-                else:
-                    first_half = ' '.join(sentences[:len(sentences)//2])
-                    second_half = ' '.join(sentences[len(sentences)//2:]) 
-                    result['text'] = '<p>{}</p><p>{}</p>'.format(first_half, second_half)
-            else:
-                result['text'] = '<p>{}</p>'.format(result['text']) 
-
+            result['text'] = format_text(result["text"], result["length"])
             return jsonify(result)
         else:
             abort(404, description="id not found")
