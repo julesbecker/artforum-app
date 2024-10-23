@@ -24,4 +24,5 @@ RUN test -f key.json || (echo "key.json not found" && exit 1)
 
 EXPOSE 8080
 
-CMD ["python", "main.py"]
+# Use gunicorn instead of python directly
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "-w", "3", "main:app"]
