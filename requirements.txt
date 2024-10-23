@@ -2,3 +2,4 @@ google-cloud-firestore
 Flask
 gunicorn
 nltk
+flask-cors
