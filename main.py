@@ -17,8 +17,19 @@ nltk.download('punkt', download_dir='./nltk')
 nltk.download("punkt_tab", download_dir="./nltk")
 nltk.data.path.append("./nltk")
 
-# change "path/to/key.json" to the path to the Google Cloud key
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./key.json"
+# Handle Google Cloud credentials from environment variable
+if 'KEY_JSON' in os.environ:
+    # Write the key data to a temporary file
+    key_json = os.environ.get('KEY_JSON')
+    temp_key_path = '/tmp/google_creds.json'
+    with open(temp_key_path, 'w') as f:
+        f.write(key_json)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_key_path
+elif os.path.exists('./key.json'):
+    # Fallback for local development
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./key.json"
+else:
+    raise RuntimeError("No Google Cloud credentials found. Set KEY_JSON environment variable or provide key.json file.")
 
 app = Flask(__name__)
 
